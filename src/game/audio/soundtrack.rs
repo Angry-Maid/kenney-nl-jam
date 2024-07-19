@@ -1,6 +1,6 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 
-use crate::game::assets::{HandleMap, SoundtrackKey};
+use crate::asset_management::{misc::SoundtrackKey, types::HandleMap};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<IsSoundtrack>();
