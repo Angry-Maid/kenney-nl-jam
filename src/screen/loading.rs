@@ -36,12 +36,6 @@ fn all_assets_loaded(
     sfx_handles: Res<HandleMap<SfxKey>>,
     soundtrack_handles: Res<HandleMap<SoundtrackKey>>,
 ) -> bool {
-    println!(
-        "All loaded ? {} {} {}",
-        image_handles.all_loaded(&asset_server),
-        sfx_handles.all_loaded(&asset_server),
-        soundtrack_handles.all_loaded(&asset_server)
-    );
     image_handles.all_loaded(&asset_server)
         && sfx_handles.all_loaded(&asset_server)
         && soundtrack_handles.all_loaded(&asset_server)
