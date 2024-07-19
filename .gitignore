@@ -3,5 +3,9 @@
 # Trunk builds
 /web/dist/
 
+rust-toolchain.toml
+
 # This file contains environment-specific configuration like linker settings
 .cargo/config.toml
+.vscode
+.editorconfig
