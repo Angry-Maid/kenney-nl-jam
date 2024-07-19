@@ -1,6 +1,6 @@
 [package]
 name = "kenney-nl-jam"
-authors = ["User"]
+authors = ["https://github.com/Angry-Maid", "https://github.com/CMorrison82z", "https://github.com/vroussea"]
 version = "0.1.0"
 edition = "2021"
 
