@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{assets::SfxKey, audio::sfx::PlaySfx};
+use crate::{asset_management::misc::SfxKey, game::audio::sfx::PlaySfx};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<InteractionPalette>();

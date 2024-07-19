@@ -1,7 +1,7 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 use rand::seq::SliceRandom;
 
-use crate::game::assets::{HandleMap, SfxKey};
+use crate::asset_management::{misc::SfxKey, types::HandleMap};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(play_sfx);

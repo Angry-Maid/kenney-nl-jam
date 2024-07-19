@@ -5,7 +5,11 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    game::assets::{HandleMap, ImageKey, SfxKey, SoundtrackKey},
+    asset_management::{
+        images::ImageKey,
+        misc::{SfxKey, SoundtrackKey},
+        types::HandleMap,
+    },
     ui::prelude::*,
 };
 
