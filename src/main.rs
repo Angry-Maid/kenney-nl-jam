@@ -1,5 +1,6 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
+#![feature(lazy_cell)]
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -8,6 +9,7 @@ use bevy::{
 };
 
 mod asset_management;
+mod config;
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod game;
@@ -59,12 +61,17 @@ fn main() -> AppExit {
                     ..default()
                 }),
         )
-        .add_plugins((game::plugin, screen::plugin, ui::plugin))
+        .add_plugins((
+            game::plugin,
+            screen::plugin,
+            ui::plugin,
+            scene::plugin,
+            asset_management::plugin,
+        ))
         .configure_sets(
             Update,
             (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
-        )
-        .add_systems(Startup, scene::camera::spawn_camera);
+        );
 
     // Enable dev tools for dev builds.
     #[cfg(feature = "dev")]

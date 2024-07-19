@@ -2,13 +2,14 @@ use bevy::app::App;
 
 use self::types::HandleMap;
 
+pub mod audio;
 pub mod images;
-pub mod misc;
+pub mod models;
 pub mod types;
 
 pub(super) fn plugin(app: &mut App) {
+    use self::audio::*;
     use self::images::ImageKey;
-    use self::misc::*;
 
     app.register_type::<HandleMap<ImageKey>>();
     app.init_resource::<HandleMap<ImageKey>>();
