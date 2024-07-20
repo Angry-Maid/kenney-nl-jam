@@ -7,6 +7,7 @@ use bevy::prelude::*;
 pub enum SceneKey {
     Taxi,
     ATM,
+    Ambulance,
 }
 
 impl AssetKey for SceneKey {
@@ -18,6 +19,10 @@ impl FromWorld for HandleMap<SceneKey> {
         let asset_server = world.resource::<AssetServer>();
         [
             (SceneKey::Taxi, asset_server.load("scenes/taxi.gltf")),
+            (
+                SceneKey::Ambulance,
+                asset_server.load("dump/ambulance.gltf"),
+            ),
             // (SceneKey::ATM, asset_server.load("dump/atm.gltf")),
         ]
         .into()
