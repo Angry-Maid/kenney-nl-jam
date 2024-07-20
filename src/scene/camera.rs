@@ -10,8 +10,8 @@ pub mod config {
 
     use bevy::prelude::{Quat, Vec3};
 
-    pub const CAMERA_STEP: f32 = 0.02;
-    pub const ZOOM_STEP: f32 = 0.02;
+    pub const CAMERA_STEP: f32 = 0.05;
+    pub const ZOOM_STEP: f32 = 0.05;
     pub const HEIGHT_BOUNDS: (f32, f32) = (3., 90.);
 
     pub static CAMERA_QUATS: LazyLock<(Quat, Quat, Quat)> = LazyLock::new(|| {

@@ -10,6 +10,7 @@ pub mod types;
 pub(super) fn plugin(app: &mut App) {
     use self::audio::*;
     use self::images::ImageKey;
+    use self::models::SceneKey;
 
     app.register_type::<HandleMap<ImageKey>>();
     app.init_resource::<HandleMap<ImageKey>>();
@@ -19,4 +20,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<HandleMap<SoundtrackKey>>();
     app.init_resource::<HandleMap<SoundtrackKey>>();
+
+    app.register_type::<HandleMap<SceneKey>>();
+    app.init_resource::<HandleMap<SceneKey>>();
 }
