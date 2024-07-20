@@ -1,9 +1,11 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
 use bevy::{dev_tools::states::log_transitions, log::LogPlugin, math::VectorSpace, prelude::*};
-use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
+use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 
 use crate::screen::Screen;
+
+pub const FLYCAM_SPEED: f32 = 10.;
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct IsInDevMode(pub bool);
@@ -45,6 +47,7 @@ fn switch_to_dev_mode(mut r_dmode: ResMut<IsInDevMode>, input: Res<ButtonInput<K
 
 fn change_cams(
     mut q_cams: Query<(Entity, &mut Camera)>,
+    mut r_m: ResMut<MovementSettings>,
     r_in_dev: Res<IsInDevMode>,
     q_f: Query<&FlyCam>,
 ) {
@@ -56,5 +59,11 @@ fn change_cams(
         } else {
             c.is_active = !val;
         }
-    })
+    });
+
+    if val {
+        r_m.speed = FLYCAM_SPEED;
+    } else {
+        r_m.speed = 0.;
+    }
 }
