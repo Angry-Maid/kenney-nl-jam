@@ -5,6 +5,7 @@
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
+    log::LogPlugin,
     prelude::*,
 };
 
@@ -34,8 +35,12 @@ fn main() -> AppExit {
     let mut app = App::new();
     app
         // Bevy-Native Plugins
-        .add_plugins(
-            DefaultPlugins
+        .add_plugins({
+            // NOTE:
+            // I did this so that I could set `LogPlugin` for `dev` feature. It was not
+            // obviously how to modify a plugin retroactively (after it had already been added to
+            // the App).
+            let default_plugins = DefaultPlugins
                 .set(AssetPlugin {
                     // Wasm builds will check for meta files (that don't exist) if this isn't set.
                     // This causes errors and even panics on web build on itch.
@@ -59,8 +64,17 @@ fn main() -> AppExit {
                         volume: Volume::new(0.3),
                     },
                     ..default()
-                }),
-        )
+                });
+
+            #[cfg(feature = "dev")]
+            let default_plugins = default_plugins.set(LogPlugin {
+                filter: "info,wgpu_core=warn,wgpu_hal=warn,kenney-nl-jam=debug".into(),
+                level: bevy::log::Level::DEBUG,
+                ..Default::default()
+            });
+
+            default_plugins
+        })
         .add_plugins((
             game::plugin,
             screen::plugin,
