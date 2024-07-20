@@ -2,11 +2,13 @@
 
 use crate::config::camera::{key_to_dir, key_to_zoom};
 
+use bevy::math::bounding::{Aabb3d, BoundingVolume, RayCast3d};
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
+use bevy::window::PrimaryWindow;
 use log::info;
 
-use super::objects::CameraPoint;
+use super::objects::{CameraIcon, CameraPoint, TranslationRelativeTo};
 
 pub mod config {
     use std::{f32::consts::PI, sync::LazyLock};
@@ -33,7 +35,7 @@ pub struct Billboarded;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_camera)
-        .add_systems(Update, (cam_control, billboarded_stuff));
+        .add_systems(Update, (jump_to_camera, billboarded_stuff));
 }
 
 pub fn spawn_camera(mut commands: Commands) {
@@ -54,7 +56,7 @@ pub fn spawn_camera(mut commands: Commands) {
             // Provide a Quaternion instead. Better for relocating the camera and maintaining a set
             // orientation.
             transform: Transform::from_rotation(isometric_quat)
-                .with_translation(Vec3::new(-10., 12., -16.)),
+                .with_translation(Vec3::new(-5., 12., -5.)),
             ..Default::default()
         },
         // Render all UI to this camera.
@@ -112,7 +114,7 @@ fn cam_control(
 }
 
 fn billboarded_stuff(
-    mut g: Gizmos,
+    // mut g: Gizmos,
     mut q: Query<&mut Transform, With<Billboarded>>,
     q_cam: Query<(&Transform, &Camera), Without<Billboarded>>,
 ) {
@@ -124,5 +126,81 @@ fn billboarded_stuff(
         q.iter_mut().for_each(|mut t| {
             t.rotation = active_camera_transform.rotation;
         })
+    }
+}
+
+fn jump_to_camera(
+    mut g: Gizmos,
+    mut q_transform: Query<&mut Transform>,
+    q_camera: Query<(Entity, &Camera, &GlobalTransform), With<MainCamera>>,
+    r_click: Res<ButtonInput<MouseButton>>,
+    q_window: Query<&Window, With<PrimaryWindow>>,
+    q_c_points: Query<(Entity, &TranslationRelativeTo), (With<CameraIcon>, Without<MainCamera>)>,
+) {
+    if !r_click.just_pressed(MouseButton::Left) {
+        return;
+    }
+    let Ok((cam_ent, camera, camera_gtransform)) = q_camera.get_single() else {
+        return;
+    };
+
+    let Ok(window) = q_window.get_single() else {
+        return;
+    };
+    let Some(cursor_position) = window.cursor_position() else {
+        return;
+    };
+
+    let Some(Ray3d { origin, direction }) =
+        camera.viewport_to_world(camera_gtransform, cursor_position)
+    else {
+        return;
+    };
+
+    if let Some((_, &next_cam_transform)) = q_c_points
+        .iter()
+        .filter_map(|(e, TranslationRelativeTo(r_e, _))| {
+            let Ok(&Transform {
+                translation,
+                rotation,
+                ..
+            }) = q_transform.get(e)
+            else {
+                return None;
+            };
+
+            let relative_location = rotation.inverse().mul_vec3(origin - translation);
+            let relative_direction = rotation.inverse().mul_vec3((direction).into());
+
+            g.arrow(
+                relative_location,
+                relative_location + 3. * relative_direction,
+                Color::LinearRgba(LinearRgba::GREEN),
+            );
+
+            (RayCast3d::new(
+                relative_location,
+                Dir3::new_unchecked(relative_direction),
+                std::f32::MAX,
+            ))
+            .aabb_intersection_at(&Aabb3d {
+                min: (-0.5 * Vec3::new(1., 1., 0.)).into(),
+                max: (0.5 * Vec3::new(1., 1., 1.)).into(),
+            })
+            .map(|d| (d, q_transform.get(*r_e).unwrap()))
+        })
+        .fold(None, |acc, (distance, transform)| {
+            if let Some((o_distance, _)) = acc {
+                if distance < o_distance {
+                    Some((distance, transform))
+                } else {
+                    acc
+                }
+            } else {
+                Some((distance, transform))
+            }
+        })
+    {
+        *q_transform.get_mut(cam_ent).unwrap() = next_cam_transform;
     }
 }

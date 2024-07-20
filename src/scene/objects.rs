@@ -14,6 +14,9 @@ use super::{
 #[derive(Component)]
 pub struct CameraPoint;
 
+#[derive(Component)]
+pub struct CameraIcon;
+
 // This exists because parenting nullifies Transform rotation...
 #[derive(Component)]
 pub struct TranslationRelativeTo(pub Entity, pub Vec3);
@@ -100,6 +103,7 @@ fn spawn_scene_with_cameras(
                     }),
                     Sprite3dAsUnitSize::Y,
                     TranslationRelativeTo(cam_ent, 2. * Vec3::Y),
+                    CameraIcon,
                     Billboarded,
                 ));
             }
