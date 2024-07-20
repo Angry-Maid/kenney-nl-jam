@@ -1,19 +1,32 @@
 use bevy::{gltf::GltfNode, prelude::*};
+use bevy_sprite3d::Sprite3d;
 
 use crate::{
-    asset_management::{models::SceneKey, types::HandleMap},
+    asset_management::{images::ImageKey, models::SceneKey, types::HandleMap},
     util::math::BLENDER_QUAT,
+};
+
+use super::{
+    camera::Billboarded,
+    sprite3d::{BufferedSprite3d, Sprite3dAsUnitSize},
 };
 
 #[derive(Component)]
 pub struct CameraPoint;
+
+// This exists because parenting nullifies Transform rotation...
+#[derive(Component)]
+pub struct TranslationRelativeTo(pub Entity, pub Vec3);
 
 pub fn plugin(app: &mut App) {
     app
         // .add_systems(Startup, (spawn_gltf_objects, spawn_cube))
         .add_systems(
             Update,
-            spawn_gltf_objects.run_if(resource_changed::<HandleMap<SceneKey>>),
+            (
+                put_relative,
+                spawn_gltf_objects.run_if(resource_changed::<HandleMap<SceneKey>>),
+            ),
         );
 }
 
@@ -22,6 +35,7 @@ fn spawn_gltf_objects(
     hm_scenes: Res<HandleMap<SceneKey>>,
     assets_gltf: Res<Assets<Gltf>>,
     assets_gltf_nodes: Res<Assets<GltfNode>>,
+    img_assets: Res<HandleMap<ImageKey>>,
 ) {
     // if the GLTF has loaded, we can navigate its contents
     // TODO:
@@ -30,7 +44,7 @@ fn spawn_gltf_objects(
     // without creating duplicates.
     if let Some(gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Ambulance).unwrap()) {
         // spawn the first scene in the file
-        spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes)
+        spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes, &img_assets)
     }
 }
 
@@ -39,7 +53,12 @@ fn spawn_gltf_objects(
 // If there are individual moving objects within the scene to which a camera is attached to,
 // it won't work...
 // I.e, the camera only moves relative to the entire scene.
-fn spawn_scene_with_cameras(c: &mut Commands, g: &Gltf, assets_gltf_nodes: &Res<Assets<GltfNode>>) {
+fn spawn_scene_with_cameras(
+    c: &mut Commands,
+    g: &Gltf,
+    assets_gltf_nodes: &Res<Assets<GltfNode>>,
+    img_assets: &Res<HandleMap<ImageKey>>,
+) {
     let scene_ent = c
         .spawn(SceneBundle {
             scene: g.scenes[0].clone(),
@@ -56,16 +75,48 @@ fn spawn_scene_with_cameras(c: &mut Commands, g: &Gltf, assets_gltf_nodes: &Res<
         })
         .for_each(|n| {
             if n.name.contains("Camera") {
+                let cam_ent = c
+                    .spawn((
+                        Name::new(n.name.clone()),
+                        n.transform.with_rotation(
+                            *BLENDER_QUAT
+                                * Quat::from_rotation_y(std::f32::consts::PI)
+                                * n.transform.rotation,
+                        ),
+                        CameraPoint,
+                    ))
+                    .set_parent(scene_ent)
+                    .id();
+
                 c.spawn((
-                    Name::new(n.name.clone()),
-                    n.transform.with_rotation(
-                        *BLENDER_QUAT
-                            * Quat::from_rotation_y(std::f32::consts::PI)
-                            * n.transform.rotation,
-                    ),
-                    CameraPoint,
-                ))
-                .set_parent(scene_ent);
+                    BufferedSprite3d::Image(Sprite3d {
+                        image: img_assets
+                            .get(&ImageKey::CameraIcon)
+                            .expect("Camera image should exist")
+                            .clone(),
+                        alpha_mode: AlphaMode::Blend,
+                        double_sided: true,
+                        ..Default::default()
+                    }),
+                    Sprite3dAsUnitSize::Y,
+                    TranslationRelativeTo(cam_ent, 2. * Vec3::Y),
+                    Billboarded,
+                ));
             }
         });
+}
+
+fn put_relative(mut q: Query<(&mut Transform)>, q2: Query<(Entity, &TranslationRelativeTo)>) {
+    q2.iter().for_each(|(e, TranslationRelativeTo(r_e, pos))| {
+        // TODO:
+        // Avoid immutable borrow in a better way. Currently clones...
+        let Ok(trans2) = q.get(*r_e) else { return };
+        let trans2 = trans2.clone();
+
+        let Ok(mut trans1) = q.get_mut(e) else {
+            return;
+        };
+
+        trans1.translation = trans2.translation + *pos;
+    })
 }

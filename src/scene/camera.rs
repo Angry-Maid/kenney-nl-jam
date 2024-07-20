@@ -8,8 +8,6 @@ use log::info;
 
 use super::objects::CameraPoint;
 
-use super::objects::CameraPoint;
-
 pub mod config {
     use std::{f32::consts::PI, sync::LazyLock};
 
@@ -30,9 +28,12 @@ pub mod config {
 #[derive(Component)]
 pub struct MainCamera;
 
+#[derive(Component)]
+pub struct Billboarded;
+
 pub fn plugin(app: &mut App) {
     app.add_systems(Startup, spawn_camera)
-        .add_systems(Update, cam_control);
+        .add_systems(Update, (cam_control, billboarded_stuff));
 }
 
 pub fn spawn_camera(mut commands: Commands) {
@@ -107,5 +108,21 @@ fn cam_control(
                 })
             }
         }
+    }
+}
+
+fn billboarded_stuff(
+    mut g: Gizmos,
+    mut q: Query<&mut Transform, With<Billboarded>>,
+    q_cam: Query<(&Transform, &Camera), Without<Billboarded>>,
+) {
+    if let Some(active_camera_transform) =
+        q_cam
+            .iter()
+            .find_map(|(t, c)| if c.is_active { Some(t) } else { None })
+    {
+        q.iter_mut().for_each(|mut t| {
+            t.rotation = active_camera_transform.rotation;
+        })
     }
 }
