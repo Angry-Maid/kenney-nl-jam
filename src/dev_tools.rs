@@ -5,7 +5,10 @@ use std::default;
 use bevy::{dev_tools::states::log_transitions, log::LogPlugin, math::VectorSpace, prelude::*};
 use bevy_flycam::{FlyCam, MovementSettings, NoCameraPlayerPlugin};
 
-use crate::{scene::objects::CameraPoint, screen::Screen};
+use crate::{
+    scene::{camera::MainCamera, objects::CameraPoint},
+    screen::Screen,
+};
 
 pub const FLYCAM_SPEED: f32 = 10.;
 
@@ -26,7 +29,7 @@ pub(super) fn plugin(app: &mut App) {
             (
                 switch_to_dev_mode,
                 log_transitions::<Screen>,
-                camera_point_gizmos.run_if(in_state(DevState::On)),
+                (camera_point_gizmos, camera_transform_gizmo).run_if(in_state(DevState::On)),
                 (change_cams).run_if(state_changed::<DevState>),
             ),
         );
@@ -64,8 +67,20 @@ fn camera_point_gizmos(mut g: Gizmos, q: Query<&Transform, With<CameraPoint>>) {
         g.sphere(
             t.translation,
             t.rotation,
-            0.25,
+            0.1,
             Color::LinearRgba(LinearRgba::RED),
+        );
+        g.axes(*t, 0.5);
+    })
+}
+
+fn camera_transform_gizmo(mut g: Gizmos, q: Query<&Transform, With<MainCamera>>) {
+    q.iter().for_each(|t| {
+        g.sphere(
+            t.translation,
+            t.rotation,
+            0.25,
+            Color::LinearRgba(LinearRgba::BLUE),
         );
         g.axes(*t, 1.);
     })

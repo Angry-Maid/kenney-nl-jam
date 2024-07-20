@@ -4,6 +4,9 @@ use crate::config::camera::{key_to_dir, key_to_zoom};
 
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
+use log::info;
+
+use super::objects::CameraPoint;
 
 use super::objects::CameraPoint;
 
