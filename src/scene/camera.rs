@@ -4,6 +4,7 @@ use crate::config::camera::{key_to_dir, key_to_zoom};
 
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
+use log::info;
 
 use super::objects::CameraPoint;
 
@@ -73,6 +74,7 @@ fn cam_control(
 ) {
     if let Result::Ok((mut trans, mut proj, cam)) = q_cam.get_single_mut() {
         if cam.is_active {
+            info!("Cam pos : {}", trans.translation);
             let pan_delta = keyboard_input
                 .get_pressed()
                 .map(key_to_dir)

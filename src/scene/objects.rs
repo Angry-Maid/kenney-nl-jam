@@ -1,6 +1,9 @@
 use bevy::{gltf::GltfNode, prelude::*};
 
-use crate::asset_management::{models::SceneKey, types::HandleMap};
+use crate::{
+    asset_management::{models::SceneKey, types::HandleMap},
+    util::math::BLENDER_QUAT,
+};
 
 #[derive(Component)]
 pub struct CameraPoint;
@@ -53,8 +56,16 @@ fn spawn_scene_with_cameras(c: &mut Commands, g: &Gltf, assets_gltf_nodes: &Res<
         })
         .for_each(|n| {
             if n.name.contains("Camera") {
-                c.spawn((Name::new(n.name.clone()), n.transform, CameraPoint))
-                    .set_parent(scene_ent);
+                c.spawn((
+                    Name::new(n.name.clone()),
+                    n.transform.with_rotation(
+                        *BLENDER_QUAT
+                            * Quat::from_rotation_y(std::f32::consts::PI)
+                            * n.transform.rotation,
+                    ),
+                    CameraPoint,
+                ))
+                .set_parent(scene_ent);
             }
         });
 }

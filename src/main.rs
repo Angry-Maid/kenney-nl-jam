@@ -17,6 +17,7 @@ mod game;
 mod scene;
 mod screen;
 mod ui;
+mod util;
 
 /// High-level groupings of systems for the app in the `Update` schedule.
 /// When adding a new variant, make sure to order it in the `configure_sets`
