@@ -10,6 +10,7 @@ use super::types::{AssetKey, HandleMap};
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum ImageKey {
     Splash,
+    CameraIcon,
 }
 
 impl AssetKey for ImageKey {
@@ -19,15 +20,26 @@ impl AssetKey for ImageKey {
 impl FromWorld for HandleMap<ImageKey> {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
-        [(
-            ImageKey::Splash,
-            asset_server.load_with_settings(
-                "images/splash.png",
-                |settings: &mut ImageLoaderSettings| {
-                    settings.sampler = ImageSampler::nearest();
-                },
+        [
+            (
+                ImageKey::Splash,
+                asset_server.load_with_settings(
+                    "images/splash.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::nearest();
+                    },
+                ),
             ),
-        )]
+            (
+                ImageKey::CameraIcon,
+                asset_server.load_with_settings(
+                    "images/camera_icon.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::nearest();
+                    },
+                ),
+            ),
+        ]
         .into()
     }
 }
