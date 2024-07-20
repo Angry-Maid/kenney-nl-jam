@@ -1,6 +1,6 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
-use bevy::{dev_tools::states::log_transitions, math::VectorSpace, prelude::*};
+use bevy::{dev_tools::states::log_transitions, log::LogPlugin, math::VectorSpace, prelude::*};
 use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
 
 use crate::screen::Screen;
@@ -11,7 +11,7 @@ pub struct IsInDevMode(pub bool);
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds
     app.insert_resource(IsInDevMode(false))
-        .add_plugins(NoCameraPlayerPlugin)
+        .add_plugins((NoCameraPlayerPlugin,))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -43,9 +43,18 @@ fn switch_to_dev_mode(mut r_dmode: ResMut<IsInDevMode>, input: Res<ButtonInput<K
     }
 }
 
-fn change_cams(mut q_cams: Query<&mut Camera>) {
-    debug!("ran it");
-    q_cams.iter_mut().for_each(|mut c| {
-        c.is_active = !c.is_active;
+fn change_cams(
+    mut q_cams: Query<(Entity, &mut Camera)>,
+    r_in_dev: Res<IsInDevMode>,
+    q_f: Query<&FlyCam>,
+) {
+    let IsInDevMode(val) = *r_in_dev;
+
+    q_cams.iter_mut().for_each(|(e, mut c)| {
+        if q_f.contains(e) {
+            c.is_active = val;
+        } else {
+            c.is_active = !val;
+        }
     })
 }
