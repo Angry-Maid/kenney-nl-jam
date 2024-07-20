@@ -6,8 +6,8 @@ use bevy::prelude::*;
 use super::Screen;
 use crate::{
     asset_management::{
+        audio::{SfxKey, SoundtrackKey},
         images::ImageKey,
-        misc::{SfxKey, SoundtrackKey},
         types::HandleMap,
     },
     ui::prelude::*,
