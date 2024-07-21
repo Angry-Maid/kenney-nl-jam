@@ -18,15 +18,6 @@ pub(super) fn plugin(app: &mut App) {
         return_to_title_screen
             .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::Backspace))),
     );
-    app.add_systems(
-        Update,
-        to_lose_screen
-            .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::KeyO))),
-    );
-    app.add_systems(
-        Update,
-        to_win_screen.run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::KeyP))),
-    );
 }
 
 fn enter_playing(mut commands: Commands) {

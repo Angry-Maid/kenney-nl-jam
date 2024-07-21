@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use bevy::{ecs::query::QuerySingleError, prelude::*};
 
+use crate::screen::Screen;
+
 #[derive(Component)]
 pub struct Robber;
 
@@ -10,12 +12,27 @@ struct LostTime {
     timer: Timer,
 }
 
+pub(super) fn plugin(app: &mut App) {
+    app.add_systems(
+        Update,
+        (in_view, timer_stopped).run_if(in_state(Screen::Playing)),
+    );
+}
+
 fn spawn_timer(commands: &mut Commands) {
     commands.spawn(
         (LostTime {
             timer: Timer::new(Duration::from_secs(30), TimerMode::Once),
         }),
     );
+}
+
+fn timer_stopped(mut next_screen: ResMut<NextState<Screen>>, q_t: Query<&LostTime>) {
+    let Ok(t) = q_t.get_single() else { return };
+
+    if t.timer.finished() {
+        next_screen.set(Screen::Lose);
+    }
 }
 
 fn in_view(

@@ -5,24 +5,36 @@
 
 use bevy::prelude::*;
 
-use crate::scene::objects::Path;
+use crate::{scene::objects::Path, screen::Screen};
+
+use super::following::Robber;
 
 #[derive(Resource)]
 struct GlobalVelocity(f32);
 
+#[derive(Event)]
+pub struct PathFinished(pub Entity);
+
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource::<GlobalVelocity>(GlobalVelocity(0.5))
-        .add_systems(Update, move_car);
+    app.add_event::<PathFinished>()
+        .insert_resource::<GlobalVelocity>(GlobalVelocity(5.5))
+        .add_systems(Update, move_along_path);
 }
 
-fn move_car(
+// TODO:
+// Separate Win logic out
+fn move_along_path(
+    mut query: Query<(Entity, &mut Transform, &mut Path)>,
+    mut e_p: EventWriter<PathFinished>,
+
+    mut scrn: ResMut<NextState<Screen>>,
+    q_robber: Query<&Robber>,
     time: Res<Time>,
     global_velocity: Res<GlobalVelocity>,
-    mut query: Query<(&mut Transform, &mut Path)>,
 ) {
     let velocity = global_velocity.0; // Access the global velocity
 
-    for (mut transform, mut path) in query.iter_mut() {
+    for (e, mut transform, mut path) in query.iter_mut() {
         if path.step < path.points.len() - 1 {
             let target = path.points[path.step + 1];
             let direction = (target - transform.translation).normalize();
@@ -42,6 +54,11 @@ fn move_car(
             let angle = Vec3::Z.angle_between(-direction);
             let axis = Vec3::Z.cross(-direction).normalize();
             transform.rotation = Quat::from_axis_angle(axis, angle);
+        } else {
+            if q_robber.contains(e) {
+                scrn.set(Screen::Win);
+                // e_p.send(PathFinished(e));
+            }
         }
     }
 }
