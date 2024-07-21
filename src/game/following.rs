@@ -26,14 +26,8 @@ fn in_view(
 ) {
     for visibility in views.iter() {
         if visibility.get() {
-            match timer.get_single_mut() {
-                Ok((e, _)) => {
-                    commands.entity(e).despawn();
-                }
-                Err(QuerySingleError::NoEntities(_)) => {
-                    spawn_timer(&mut commands);
-                }
-                _ => {}
+            if let Result::Ok((e, _)) = timer.get_single_mut() {
+                commands.entity(e).despawn();
             }
         } else {
             match timer.get_single_mut() {
