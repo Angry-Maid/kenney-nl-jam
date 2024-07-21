@@ -17,12 +17,12 @@ on:
 # Configure constants for this workflow.
 env:
   # The base filename of the binary produced by `cargo build`.
-  BINARY: kenney-nl-jam
+  BINARY: CChasers
   # The name to use for the packaged application produced by this workflow.
-  PACKAGE_NAME: kenney-nl-jam
+  PACKAGE_NAME: CChasers
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: AngryMaid/kenney-nl-jam
+  ITCH_TARGET: AngryMaid/CChasers
   # The organization or author that owns the rights to the game.
   OWNER: AngryMaid
   # The path to the assets directory.
