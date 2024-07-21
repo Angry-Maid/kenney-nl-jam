@@ -51,7 +51,7 @@ fn main() -> AppExit {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Kenney Nl Jam".to_string(),
+                        title: "CChasers".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
                         prevent_default_event_handling: true,
