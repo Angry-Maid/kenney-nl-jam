@@ -3,14 +3,12 @@ use bevy::app::App;
 use self::types::HandleMap;
 
 pub mod audio;
-pub mod fonts;
 pub mod images;
 pub mod models;
 pub mod types;
 
 pub(super) fn plugin(app: &mut App) {
     use self::audio::*;
-    use self::fonts::FontKey;
     use self::images::ImageKey;
     use self::models::SceneKey;
 
@@ -25,6 +23,4 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<HandleMap<SceneKey>>();
     app.init_resource::<HandleMap<SceneKey>>();
-    app.register_type::<HandleMap<FontKey>>();
-    app.init_resource::<HandleMap<FontKey>>();
 }
