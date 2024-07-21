@@ -3,7 +3,10 @@
 use bevy::prelude::*;
 
 use super::Screen;
-use crate::ui::prelude::*;
+use crate::{
+    asset_management::{fonts::FontKey, images::ImageKey, types::HandleMap},
+    ui::prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
@@ -22,16 +25,29 @@ enum TitleAction {
     Exit,
 }
 
-fn enter_title(mut commands: Commands) {
+fn enter_title(
+    mut commands: Commands,
+    font_handles: Res<HandleMap<FontKey>>,
+    image_handles: Res<HandleMap<ImageKey>>,
+) {
+    let font = font_handles[&FontKey::FontAwesome].clone_weak();
+    let button_img = image_handles[&ImageKey::UiButton].clone_weak();
+
     commands
         .ui_root()
         .insert(StateScoped(Screen::Title))
         .with_children(|children| {
-            children.button("Play").insert(TitleAction::Play);
-            children.button("Credits").insert(TitleAction::Credits);
+            children
+                .button("", Some(font.clone_weak()), Some(button_img.clone_weak()))
+                .insert(TitleAction::Play);
+            children
+                .button("", Some(font.clone_weak()), Some(button_img.clone_weak()))
+                .insert(TitleAction::Credits);
 
             #[cfg(not(target_family = "wasm"))]
-            children.button("Exit").insert(TitleAction::Exit);
+            children
+                .button("", Some(font.clone_weak()), Some(button_img.clone_weak()))
+                .insert(TitleAction::Exit);
         });
 }
 
