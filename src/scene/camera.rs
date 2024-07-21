@@ -1,6 +1,7 @@
 // use crate::config::{DirectionalKeys, KeyToDirection, KeyToZoomDirection, ZoomKeys};
 
 use crate::config::camera::{key_to_dir, key_to_zoom};
+use crate::screen::Screen;
 
 use bevy::math::bounding::{Aabb3d, BoundingVolume, RayCast3d};
 use bevy::prelude::*;
@@ -36,8 +37,18 @@ pub struct Billboarded;
 pub fn plugin(app: &mut App) {
     app.insert_resource(ClearColor(Color::srgb(0.6, 0.7, 1.0)))
         .add_systems(Startup, spawn_camera)
-        .add_systems(Update, (jump_to_camera, billboarded_stuff));
+        .add_systems(
+            Update,
+            (jump_to_camera, billboarded_stuff).run_if(in_state(Screen::Playing)),
+        );
+    // .add_systems(OnExit(Screen::Playing), despawn_camera);
 }
+
+// pub fn despawn_camera(mut commands: Commands, cam: Query<Entity, With<MainCamera>>) {
+//     if let Result::Ok(cam) = cam.get_single() {
+//         commands.entity(cam).despawn();
+//     }
+// }
 
 pub fn spawn_camera(mut commands: Commands) {
     let (_, _, isometric_quat) = *config::CAMERA_QUATS;

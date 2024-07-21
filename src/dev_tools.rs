@@ -12,7 +12,8 @@ use crate::{
 
 pub const FLYCAM_SPEED: f32 = 10.;
 
-#[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(SubStates, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[source(Screen = Screen::Playing)]
 pub enum DevState {
     #[default]
     Off,
@@ -21,18 +22,23 @@ pub enum DevState {
 
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds
-    app.init_state::<DevState>()
+    app.add_sub_state::<DevState>()
         .add_plugins((NoCameraPlayerPlugin,))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
             (
-                switch_to_dev_mode,
+                switch_to_dev_mode.run_if(in_state(Screen::Playing)),
                 log_transitions::<Screen>,
                 (camera_point_gizmos, camera_transform_gizmo).run_if(in_state(DevState::On)),
                 (change_cams).run_if(state_changed::<DevState>),
             ),
         );
+    // .add_systems(OnExit(Screen::Playing), ensure_dev_off);
+}
+
+fn ensure_dev_off(mut r_dmode: ResMut<NextState<DevState>>) {
+    r_dmode.set(DevState::Off);
 }
 
 fn setup(mut commands: Commands) {

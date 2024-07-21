@@ -25,6 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<HandleMap<SceneKey>>();
     app.init_resource::<HandleMap<SceneKey>>();
+
     app.register_type::<HandleMap<FontKey>>();
     app.init_resource::<HandleMap<FontKey>>();
 }

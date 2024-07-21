@@ -6,7 +6,6 @@ use bevy::prelude::*;
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum SceneKey {
     Taxi,
-    ATM,
     Ambulance,
     City,
 }
