@@ -95,7 +95,6 @@ pub fn spawn_gltf_objects(
     // We want to create a new scene for each new scene that's loaded,
     // without creating duplicates.
     if let Some(gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::City).unwrap()) {
-        println!("GOnna spawn big scity");
         *r_current_scn = CurrentScene(Some(SceneKey::City));
 
         // spawn the first scene in the file
