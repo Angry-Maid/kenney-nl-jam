@@ -91,7 +91,7 @@ fn cam_control(
         (&mut Transform, &mut Projection, &Camera),
         (With<MainCamera>, Without<CameraPoint>),
     >,
-    q_c_points: Query<(&Transform), With<CameraPoint>>,
+    q_c_points: Query<&Transform, With<CameraPoint>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     if let Result::Ok((mut trans, mut proj, cam)) = q_cam.get_single_mut() {
@@ -113,7 +113,7 @@ fn cam_control(
 
             if let Projection::Orthographic(ref mut proj1) = &mut *proj {
                 proj1.scale = f32::clamp(
-                    proj1.scale + config::ZOOM_STEP * (zoom_delta as f32),
+                    proj1.scale + config::ZOOM_STEP * zoom_delta,
                     config::HEIGHT_BOUNDS.0,
                     config::HEIGHT_BOUNDS.1,
                 );
