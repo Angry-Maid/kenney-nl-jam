@@ -115,17 +115,11 @@ fn spawn_scene_with_cameras(
         })
         .for_each(|n| {
             if n.name.contains("Camera") {
+                let mut rot_t = n.transform.clone();
+                rot_t.rotate_local_y(std::f32::consts::PI);
+
                 let cam_ent = c
-                    .spawn((
-                        Name::new(n.name.clone()),
-                        n.transform,
-                        //     .with_rotation(
-                        //     *BLENDER_QUAT
-                        //         * Quat::from_rotation_y(std::f32::consts::PI)
-                        //         * n.transform.rotation,
-                        // ),
-                        CameraPoint,
-                    ))
+                    .spawn((Name::new(n.name.clone()), rot_t, CameraPoint))
                     .set_parent(scene_ent)
                     .id();
 

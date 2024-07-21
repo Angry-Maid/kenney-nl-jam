@@ -56,12 +56,17 @@ pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         MainCamera,
         Camera3dBundle {
-            projection: OrthographicProjection {
-                scale: 5.0,
-                scaling_mode: ScalingMode::FixedVertical(2.0),
+            projection: PerspectiveProjection {
+                fov: std::f32::consts::FRAC_PI_2,
                 ..Default::default()
             }
             .into(),
+            // projection: OrthographicProjection {
+            //     scale: 5.0,
+            //     scaling_mode: ScalingMode::FixedVertical(2.0),
+            //     ..Default::default()
+            // }
+            // .into(),
             // NOTE:
             // Distance might affect shadows and clipping / culling)
             // TODO:
