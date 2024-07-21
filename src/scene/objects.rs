@@ -1,11 +1,17 @@
+use std::collections::HashMap;
+
 use bevy::{gltf::GltfNode, prelude::*};
 use bevy_sprite3d::Sprite3d;
+
+use rand::seq::SliceRandom;
 
 use crate::{
     asset_management::{images::ImageKey, models::SceneKey, types::HandleMap},
     screen::Screen,
-    util::math::BLENDER_QUAT,
 };
+
+#[cfg(feature = "dev")]
+use crate::dev_tools::DevState;
 
 use super::{camera::Billboarded, sprite3d::BufferedSprite3d};
 
@@ -30,13 +36,17 @@ pub struct Path {
     pub step: usize,
 }
 
-const ROBBER_SPAWN_NODE: &str = "Robber";
+const ROBBER_SPAWN_NODE_PREFIX: &str = "Robber";
+const POINT_SUFFIX: &str = "Point";
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<CurrentScene>()
         .add_systems(OnEnter(Screen::Playing), (spawn_gltf_objects,))
         .add_systems(OnExit(Screen::Playing), (despawn_gltf_objects,))
-        .add_systems(Update, (put_relative).run_if(in_state(Screen::Playing)));
+        .add_systems(Update, (put_relative,).run_if(in_state(Screen::Playing)));
+
+    #[cfg(feature = "dev")]
+    app.add_systems(Update, spawn_path_nodes.run_if(in_state(DevState::On)));
 }
 
 fn despawn_gltf_objects(
@@ -89,13 +99,9 @@ pub fn spawn_gltf_objects(
 
         // spawn the first scene in the file
         spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes, &img_assets);
-    }
-    if let Some(city_gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::City).unwrap()) {
-        // spawn the first scene in the file
-        spawn_scene_with_cameras(&mut commands, city_gltf, &assets_gltf_nodes, &img_assets);
-        if let Some(gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Taxi).unwrap()) {
+        if let Some(robber_gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Taxi).unwrap()) {
             // spawn the first scene in the file
-            spawn_robber(&mut commands, gltf, city_gltf, &assets_gltf_nodes);
+            spawn_robber(&mut commands, robber_gltf, gltf, &assets_gltf_nodes);
         }
     }
 }
@@ -130,7 +136,7 @@ fn spawn_scene_with_cameras(
         })
         .for_each(|n| {
             if n.name.contains("Camera") {
-                let mut rot_t = n.transform.clone();
+                let mut rot_t = n.transform;
                 rot_t.rotate_local_y(std::f32::consts::PI);
 
                 let cam_ent = c
@@ -157,12 +163,10 @@ fn spawn_scene_with_cameras(
         });
 }
 
-fn put_relative(mut q: Query<(&mut Transform)>, q2: Query<(Entity, &TranslationRelativeTo)>) {
+fn put_relative(mut q: Query<&mut Transform>, q2: Query<(Entity, &TranslationRelativeTo)>) {
     q2.iter().for_each(|(e, &TranslationRelativeTo(r_e, pos))| {
-        // TODO:
-        // Avoid immutable borrow in a better way. Currently clones...
         let Ok(trans2) = q.get(r_e) else { return };
-        let trans2 = trans2.clone();
+        let trans2 = *trans2;
 
         let Ok(mut trans1) = q.get_mut(e) else {
             return;
@@ -186,17 +190,7 @@ fn spawn_robber(
     // if the GLTF has loaded, we can navigate its contents
     // TODO:
     // Collect all possible paths that should be named as follow: Robber1Point1, RObber1Point2, Robber2Point1, etc and then get one at random for robber
-    let path: Vec<Vec3> = city_g
-        .nodes
-        .iter()
-        .map(|h| {
-            assets_gltf_nodes
-                .get(h)
-                .expect("GltfNode should have loaded")
-        })
-        .filter(|n| n.name.contains(ROBBER_SPAWN_NODE))
-        .map(|n| n.transform.translation)
-        .collect();
+    let path: Vec<Vec3> = get_random_robber_path(city_g, assets_gltf_nodes);
     info!("path: {:?}", path.clone());
 
     let starting_position = path.first().cloned().unwrap_or_default();
@@ -212,4 +206,85 @@ fn spawn_robber(
             step: 0,
         },
     ));
+}
+
+fn get_random_robber_path(city_g: &Gltf, assets_gltf_nodes: &Res<Assets<GltfNode>>) -> Vec<Vec3> {
+    get_robber_paths(city_g, assets_gltf_nodes)
+        .choose(&mut rand::thread_rng())
+        .cloned()
+        .expect("Robber doesn't have set path")
+}
+
+fn get_robber_paths(city_g: &Gltf, assets_gltf_nodes: &Res<Assets<GltfNode>>) -> Vec<Vec<Vec3>> {
+    let paths: Vec<Vec<Vec3>> = city_g
+        .nodes
+        .iter()
+        .filter_map(|handle| {
+            assets_gltf_nodes.get(handle).and_then(|node| {
+                if node.name.contains(ROBBER_SPAWN_NODE_PREFIX) {
+                    extract_group_and_suffix(&node.name).map(|(group_number, suffix_number)| {
+                        (group_number, suffix_number, node.transform.translation)
+                    })
+                } else {
+                    None
+                }
+            })
+        })
+        .fold(
+            HashMap::<usize, Vec<(usize, Vec3)>>::new(),
+            |mut groups, (group_number, suffix_number, translation)| {
+                groups
+                    .entry(group_number)
+                    .or_default()
+                    .push((suffix_number, translation));
+                groups
+            },
+        )
+        .into_values()
+        .map(|mut node_vec| {
+            node_vec.sort_by_key(|(suffix, _)| *suffix);
+            node_vec
+                .into_iter()
+                .map(|(_, translation)| translation)
+                .collect()
+        })
+        .collect();
+
+    paths
+}
+
+// Extract group and suffix numbers from node names
+fn extract_group_and_suffix(name: &str) -> Option<(usize, usize)> {
+    let parts: Vec<&str> = name.split(POINT_SUFFIX).collect();
+    if parts.len() == 2 {
+        let group_number = parts[0]
+            .strip_prefix(ROBBER_SPAWN_NODE_PREFIX)
+            .and_then(|s| s.parse().ok())?;
+        let suffix_number = parts[1].parse().ok()?;
+        Some((group_number, suffix_number))
+    } else {
+        None
+    }
+}
+
+fn spawn_path_nodes(
+    mut c: Commands,
+    paths_query: Query<&Path>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let material = materials.add(Color::srgb(0.8, 0.0, 0.0));
+
+    let sphere = meshes.add(Mesh::from(Sphere { radius: 0.1 }));
+
+    paths_query.iter().for_each(|path| {
+        path.points.iter().for_each(|point| {
+            c.spawn(PbrBundle {
+                mesh: sphere.clone(),
+                material: material.clone(),
+                transform: Transform::from_translation(*point),
+                ..default()
+            });
+        })
+    });
 }

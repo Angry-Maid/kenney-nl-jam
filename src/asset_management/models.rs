@@ -19,8 +19,6 @@ impl FromWorld for HandleMap<SceneKey> {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
         [
-            (SceneKey::Robber, asset_server.load("robber/robber.gltf")),
-            (SceneKey::City, asset_server.load("scenes/city.gltf")),
             (SceneKey::Taxi, asset_server.load("scenes/taxi.gltf")),
             (
                 SceneKey::Ambulance,
