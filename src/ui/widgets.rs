@@ -7,57 +7,30 @@ use super::{interaction::InteractionPalette, palette::*};
 /// An extension trait for spawning UI widgets.
 pub trait Widgets {
     /// Spawn a simple button with text.
-    fn button(
-        &mut self,
-        text: impl Into<String>,
-        font: Option<Handle<Font>>,
-        button_image: Option<Handle<Image>>,
-    ) -> EntityCommands;
+    fn button(&mut self, text: impl Into<String>) -> EntityCommands;
 
     /// Spawn a simple header label. Bigger than [`Widgets::label`].
-    fn header(
-        &mut self,
-        text: impl Into<String>,
-        bg_image: Option<Handle<Image>>,
-    ) -> EntityCommands;
+    fn header(&mut self, text: impl Into<String>) -> EntityCommands;
 
     /// Spawn a simple text label.
     fn label(&mut self, text: impl Into<String>) -> EntityCommands;
 }
 
 impl<T: Spawn> Widgets for T {
-    fn button(
-        &mut self,
-        text: impl Into<String>,
-        font: Option<Handle<Font>>,
-        button_image: Option<Handle<Image>>,
-    ) -> EntityCommands {
-        let button_style = Style {
-            width: Px(200.0),
-            height: Px(65.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        };
-        let button_bg_color = BackgroundColor(NODE_BACKGROUND);
-
-        let button = if let Some(button_image) = button_image {
-            ButtonBundle {
-                style: button_style,
-                image: UiImage::new(button_image),
-                ..default()
-            }
-        } else {
-            ButtonBundle {
-                style: button_style,
-                background_color: button_bg_color,
-                ..default()
-            }
-        };
-
+    fn button(&mut self, text: impl Into<String>) -> EntityCommands {
         let mut entity = self.spawn((
             Name::new("Button"),
-            button,
+            ButtonBundle {
+                style: Style {
+                    width: Px(200.0),
+                    height: Px(65.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: BackgroundColor(NODE_BACKGROUND),
+                ..default()
+            },
             InteractionPalette {
                 none: NODE_BACKGROUND,
                 hovered: BUTTON_HOVERED_BACKGROUND,
@@ -65,65 +38,36 @@ impl<T: Spawn> Widgets for T {
             },
         ));
         entity.with_children(|children| {
-            let style = if let Some(font) = font {
-                TextStyle {
-                    font,
-                    font_size: 40.0,
-                    color: BUTTON_TEXT,
-                }
-            } else {
-                TextStyle {
-                    font_size: 40.0,
-                    color: BUTTON_TEXT,
-                    ..default()
-                }
-            };
-
             children.spawn((
                 Name::new("Button Text"),
-                TextBundle::from_section(text, style),
+                TextBundle::from_section(
+                    text,
+                    TextStyle {
+                        font_size: 40.0,
+                        color: BUTTON_TEXT,
+                        ..default()
+                    },
+                ),
             ));
         });
         entity
     }
 
-    fn header(
-        &mut self,
-        text: impl Into<String>,
-        bg_image: Option<Handle<Image>>,
-    ) -> EntityCommands {
-        let mut entity = if let Some(bg_image) = bg_image {
-            self.spawn((
-                Name::new("Header"),
-                ImageBundle {
-                    style: Style {
-                        width: Px(250.0),
-                        height: Px(65.0),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    image: UiImage::new(bg_image),
+    fn header(&mut self, text: impl Into<String>) -> EntityCommands {
+        let mut entity = self.spawn((
+            Name::new("Header"),
+            NodeBundle {
+                style: Style {
+                    width: Px(500.0),
+                    height: Px(65.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
                     ..default()
                 },
-            ))
-        } else {
-            self.spawn((
-                Name::new("Header"),
-                NodeBundle {
-                    style: Style {
-                        width: Px(500.0),
-                        height: Px(65.0),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    background_color: BackgroundColor(NODE_BACKGROUND),
-                    ..default()
-                },
-            ))
-        };
-
+                background_color: BackgroundColor(NODE_BACKGROUND),
+                ..default()
+            },
+        ));
         entity.with_children(|children| {
             children.spawn((
                 Name::new("Header Text"),
@@ -145,7 +89,7 @@ impl<T: Spawn> Widgets for T {
             Name::new("Label"),
             NodeBundle {
                 style: Style {
-                    width: Px(250.0),
+                    width: Px(500.0),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
