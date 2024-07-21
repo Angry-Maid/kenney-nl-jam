@@ -7,6 +7,7 @@ use bevy::prelude::*;
 pub enum SceneKey {
     Taxi,
     Ambulance,
+    Robber,
     City,
 }
 

@@ -11,3 +11,4 @@ rust-toolchain.toml
 .cargo/config.toml
 .vscode
 .editorconfig
+justfile
