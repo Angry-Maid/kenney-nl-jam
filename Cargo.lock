@@ -3,15 +3,6 @@
 version = 3
 
 [[package]]
-name = "CChasers"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "log",
- "rand",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1313,6 +1304,15 @@ dependencies = [
  "jobserver",
  "libc",
  "once_cell",
+]
+
+[[package]]
+name = "cchasers"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "log",
+ "rand",
 ]
 
 [[package]]

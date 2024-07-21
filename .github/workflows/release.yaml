@@ -17,12 +17,12 @@ on:
 # Configure constants for this workflow.
 env:
   # The base filename of the binary produced by `cargo build`.
-  BINARY: CChasers
+  BINARY: cchasers
   # The name to use for the packaged application produced by this workflow.
-  PACKAGE_NAME: CChasers
+  PACKAGE_NAME: cchasers
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: AngryMaid/CChasers
+  ITCH_TARGET: AngryMaid/cchasers
   # The organization or author that owns the rights to the game.
   OWNER: AngryMaid
   # The path to the assets directory.
