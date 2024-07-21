@@ -37,11 +37,25 @@ pub struct Billboarded;
 pub fn plugin(app: &mut App) {
     app.insert_resource(ClearColor(Color::srgb(0.6, 0.7, 1.0)))
         .add_systems(Startup, spawn_camera)
+        .add_systems(OnEnter(Screen::Playing), to_start_camera)
         .add_systems(
             Update,
             (jump_to_camera, billboarded_stuff).run_if(in_state(Screen::Playing)),
         );
     // .add_systems(OnExit(Screen::Playing), despawn_camera);
+}
+
+fn to_start_camera(
+    mut q_trans : Query<&mut Transform>,
+    q_cam: Query<Entity, With<MainCamera>>,
+    q_cams: Query<(Entity, &Name), (With<CameraPoint>, Without<MainCamera>)>
+) {
+    let Ok(cam_e) = q_cam.get_single() else {return};
+    let start_cam_trans = q_cams.iter().find_map(|(o_e, n)| if (*n).contains("StartCamera") {Some(*q_trans.get(o_e).unwrap())} else {None}).expect("Start Camera should exist");
+
+    let Ok(mut cam_t) = q_trans.get_mut(cam_e) else {return};
+
+    *cam_t = start_cam_trans;
 }
 
 // pub fn despawn_camera(mut commands: Commands, cam: Query<Entity, With<MainCamera>>) {
