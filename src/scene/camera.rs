@@ -34,7 +34,8 @@ pub struct MainCamera;
 pub struct Billboarded;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_camera)
+    app.insert_resource(ClearColor(Color::srgb(0.6, 0.7, 1.0)))
+        .add_systems(Startup, spawn_camera)
         .add_systems(Update, (jump_to_camera, billboarded_stuff));
 }
 

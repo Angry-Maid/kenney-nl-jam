@@ -8,6 +8,7 @@ pub enum SceneKey {
     Taxi,
     ATM,
     Ambulance,
+    City,
 }
 
 impl AssetKey for SceneKey {
@@ -23,7 +24,7 @@ impl FromWorld for HandleMap<SceneKey> {
                 SceneKey::Ambulance,
                 asset_server.load("dump/ambulance.gltf"),
             ),
-            // (SceneKey::ATM, asset_server.load("dump/atm.gltf")),
+            (SceneKey::City, asset_server.load("dump/city.gltf")),
         ]
         .into()
     }

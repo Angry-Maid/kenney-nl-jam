@@ -12,20 +12,7 @@ pub enum BufferedSprite3d {
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(Sprite3dPlugin)
-        .add_systems(Update, (load_buffered_sprites, scale_meshes));
-}
-
-// NOTE:
-// Behaves kind of like an event, but depends on Image asset loading, so it must be polled until
-// it can be executed.
-// TODO:
-// A better solution
-#[derive(Component)]
-pub enum Sprite3dAsUnitSize {
-    // NOTE:
-    // The chosen axis is scaled to `1`, and the other axes are scaled relative to that axis.
-    X,
-    Y,
+        .add_systems(Update, (load_buffered_sprites));
 }
 
 pub fn clone_sprite3d(s: &Sprite3d) -> Sprite3d {
@@ -72,29 +59,5 @@ pub fn load_buffered_sprites(
                 e_c.insert(clone_sprite3d(s).bundle_with_atlas(&mut sp, a.clone()));
             }
         }
-    })
-}
-
-pub fn scale_meshes(
-    mut c: Commands,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
-    q: Query<(Entity, &Sprite3dAsUnitSize, &Handle<Mesh>), With<Sprite3dComponent>>,
-) {
-    q.iter().for_each(|(e, ss, hm)| {
-        let mesh = mesh_assets.get_mut(hm).unwrap();
-
-        let mesh_extents: Vec3 = mesh.compute_aabb().unwrap().half_extents.into();
-
-        // MySizeInMeters = (Desired / X) * MeshSize
-        // Result = Scale * MeshSize
-        let factor = match ss {
-            Sprite3dAsUnitSize::X => 1. / (2. * mesh_extents.x),
-            Sprite3dAsUnitSize::Y => 1. / (2. * mesh_extents.y),
-        };
-
-        mesh.scale_by(factor * Vec3::ONE);
-
-        let mut e_c = c.entity(e);
-        e_c.remove::<Sprite3dAsUnitSize>();
     })
 }
