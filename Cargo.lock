@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "CChasers"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_flycam",
+ "bevy_sprite3d",
+ "log",
+ "rand",
+]
+
+[[package]]
 name = "ab_glyph"
 version = "0.2.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2268,17 +2279,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29c15563dc2726973df627357ce0c9ddddbea194836909d655df6a75d2cf296d"
 dependencies = [
  "wasm-bindgen",
-]
-
-[[package]]
-name = "kenney-nl-jam"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_flycam",
- "bevy_sprite3d",
- "log",
- "rand",
 ]
 
 [[package]]

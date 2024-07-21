@@ -8,7 +8,6 @@ use crate::{
     asset_management::{fonts::FontKey, images::ImageKey, types::HandleMap},
     game::audio::soundtrack::PlaySoundtrack,
     ui::prelude::*,
-    ui::prelude::*,
 };
 
 pub(super) fn plugin(app: &mut App) {
