@@ -4,7 +4,9 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    asset_management::misc::SoundtrackKey, game::audio::soundtrack::PlaySoundtrack, ui::prelude::*,
+    asset_management::{fonts::FontKey, images::ImageKey, misc::SoundtrackKey, types::HandleMap},
+    game::audio::soundtrack::PlaySoundtrack,
+    ui::prelude::*,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -24,24 +26,34 @@ enum CreditsAction {
     Back,
 }
 
-fn enter_credits(mut commands: Commands) {
+fn enter_credits(
+    mut commands: Commands,
+    font_handles: Res<HandleMap<FontKey>>,
+    image_handles: Res<HandleMap<ImageKey>>,
+) {
+    let header_image = image_handles[&ImageKey::UiHeader].clone_weak();
+
     commands
         .ui_root()
         .insert(StateScoped(Screen::Credits))
         .with_children(|children| {
-            children.header("Made by");
-            children.label("Alice - Foo");
-            children.label("Bob - Bar");
+            children.header("Made by", Some(header_image.clone_weak()));
+            children.label("AngryMaid");
+            children.label("myfirstname");
+            children.label("Wannes Malfait");
+            children.label("G1Radiobot");
+            children.label("Raokk");
 
-            children.header("Assets");
-            children.label("Bevy logo - All rights reserved by the Bevy Foundation. Permission granted for splash screen use when unmodified.");
-            children.label("Ducky sprite - CC0 by Caz Creates Games");
-            children.label("Music - CC BY 3.0 by Kevin MacLeod");
-
-            children.button("Back").insert(CreditsAction::Back);
+            children
+                .button(
+                    "",
+                    Some(font_handles[&FontKey::FontAwesome].clone_weak()),
+                    Some(image_handles[&ImageKey::UiButton].clone_weak()),
+                )
+                .insert(CreditsAction::Back);
         });
 
-    commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Credits));
+    // commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Credits));
 }
 
 fn exit_credits(mut commands: Commands) {

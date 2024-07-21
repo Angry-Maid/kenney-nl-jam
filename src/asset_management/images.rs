@@ -5,11 +5,10 @@ use bevy::{
 
 use super::types::{AssetKey, HandleMap};
 
-// TODO:
-// Actually load our assets...
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum ImageKey {
-    Ducky,
+    UiButton,
+    UiHeader,
 }
 
 impl AssetKey for ImageKey {
@@ -19,15 +18,26 @@ impl AssetKey for ImageKey {
 impl FromWorld for HandleMap<ImageKey> {
     fn from_world(world: &mut World) -> Self {
         let asset_server = world.resource::<AssetServer>();
-        [(
-            ImageKey::Ducky,
-            asset_server.load_with_settings(
-                "images/ducky.png",
-                |settings: &mut ImageLoaderSettings| {
-                    settings.sampler = ImageSampler::nearest();
-                },
+        [
+            (
+                ImageKey::UiButton,
+                asset_server.load_with_settings(
+                    "images/ui/button_rectangle_depth_gradient.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::nearest();
+                    },
+                ),
             ),
-        )]
+            (
+                ImageKey::UiHeader,
+                asset_server.load_with_settings(
+                    "images/ui/button_rectangle_line.png",
+                    |settings: &mut ImageLoaderSettings| {
+                        settings.sampler = ImageSampler::nearest();
+                    },
+                ),
+            ),
+        ]
         .into()
     }
 }

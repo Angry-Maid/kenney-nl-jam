@@ -54,7 +54,7 @@ fn main() -> AppExit {
                 })
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.3),
+                        volume: Volume::new(0.25),
                     },
                     ..default()
                 }),
