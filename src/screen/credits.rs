@@ -4,9 +4,10 @@ use bevy::prelude::*;
 
 use super::Screen;
 use crate::{
-    asset_management::audio::SoundtrackKey, game::audio::soundtrack::PlaySoundtrack, ui::prelude::*,
-    asset_management::{fonts::FontKey, images::ImageKey, misc::SoundtrackKey, types::HandleMap},
+    asset_management::audio::SoundtrackKey,
+    asset_management::{fonts::FontKey, images::ImageKey, types::HandleMap},
     game::audio::soundtrack::PlaySoundtrack,
+    ui::prelude::*,
     ui::prelude::*,
 };
 
