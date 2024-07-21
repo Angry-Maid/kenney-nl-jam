@@ -7,6 +7,7 @@ use rand::seq::SliceRandom;
 
 use crate::{
     asset_management::{images::ImageKey, models::SceneKey, types::HandleMap},
+    game::following::Robber,
     screen::Screen,
 };
 
@@ -205,6 +206,7 @@ fn spawn_robber(
             points: path,
             step: 0,
         },
+        Robber,
     ));
 }
 
