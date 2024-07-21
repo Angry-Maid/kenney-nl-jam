@@ -32,12 +32,7 @@ impl FromWorld for HandleMap<ImageKey> {
             ),
             (
                 ImageKey::CameraIcon,
-                asset_server.load_with_settings(
-                    "images/camera_icon.png",
-                    |settings: &mut ImageLoaderSettings| {
-                        settings.sampler = ImageSampler::nearest();
-                    },
-                ),
+                asset_server.load("images/camera_icon.png"),
             ),
         ]
         .into()
