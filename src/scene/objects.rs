@@ -24,6 +24,13 @@ pub struct TranslationRelativeTo(pub Entity, pub Vec3);
 
 #[derive(Resource, Default)]
 pub struct CurrentScene(pub Option<SceneKey>);
+#[derive(Component, Default)]
+pub struct Path {
+    pub points: Vec<Vec3>,
+    pub step: usize,
+}
+
+const ROBBER_SPAWN_NODE: &str = "Robber";
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<CurrentScene>()
@@ -52,7 +59,7 @@ fn despawn_gltf_objects(
     *r_current_scn = CurrentScene(None);
 }
 
-fn spawn_gltf_objects(
+pub fn spawn_gltf_objects(
     mut commands: Commands,
     mut r_current_scn: ResMut<CurrentScene>,
     time: Res<Time>,
@@ -81,7 +88,15 @@ fn spawn_gltf_objects(
         *r_current_scn = CurrentScene(Some(SceneKey::City));
 
         // spawn the first scene in the file
-        spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes, &img_assets)
+        spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes, &img_assets);
+    }
+    if let Some(city_gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::City).unwrap()) {
+        // spawn the first scene in the file
+        spawn_scene_with_cameras(&mut commands, city_gltf, &assets_gltf_nodes, &img_assets);
+        if let Some(gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Taxi).unwrap()) {
+            // spawn the first scene in the file
+            spawn_robber(&mut commands, gltf, city_gltf, &assets_gltf_nodes);
+        }
     }
 }
 
@@ -155,4 +170,46 @@ fn put_relative(mut q: Query<(&mut Transform)>, q2: Query<(Entity, &TranslationR
 
         trans1.translation = trans2.translation + pos;
     })
+}
+
+// TODO:
+// Currently sets camera's parent to the scene.
+// If there are individual moving objects within the scene to which a camera is attached to,
+// it won't work...
+// I.e, the camera only moves relative to the entire scene.
+fn spawn_robber(
+    c: &mut Commands,
+    g: &Gltf,
+    city_g: &Gltf,
+    assets_gltf_nodes: &Res<Assets<GltfNode>>,
+) {
+    // if the GLTF has loaded, we can navigate its contents
+    // TODO:
+    // Collect all possible paths that should be named as follow: Robber1Point1, RObber1Point2, Robber2Point1, etc and then get one at random for robber
+    let path: Vec<Vec3> = city_g
+        .nodes
+        .iter()
+        .map(|h| {
+            assets_gltf_nodes
+                .get(h)
+                .expect("GltfNode should have loaded")
+        })
+        .filter(|n| n.name.contains(ROBBER_SPAWN_NODE))
+        .map(|n| n.transform.translation)
+        .collect();
+    info!("path: {:?}", path.clone());
+
+    let starting_position = path.first().cloned().unwrap_or_default();
+    info!("Robber position: {:?}", starting_position.clone());
+    c.spawn((
+        SceneBundle {
+            scene: g.scenes[0].clone(),
+            transform: Transform::from_translation(starting_position),
+            ..Default::default()
+        },
+        Path {
+            points: path,
+            step: 0,
+        },
+    ));
 }
