@@ -51,8 +51,8 @@ fn move_along_path(
             }
 
             // Adjust rotation to face the target
-            let angle = Vec3::Z.angle_between(-direction);
-            let axis = Vec3::Z.cross(-direction).normalize();
+            let angle = Vec3::Z.angle_between(direction);
+            let axis = Vec3::Z.cross(direction).normalize();
             transform.rotation = Quat::from_axis_angle(axis, angle);
         } else {
             if q_robber.contains(e) {

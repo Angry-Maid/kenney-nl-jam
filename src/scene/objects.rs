@@ -99,7 +99,7 @@ pub fn spawn_gltf_objects(
 
         // spawn the first scene in the file
         spawn_scene_with_cameras(&mut commands, gltf, &assets_gltf_nodes, &img_assets);
-        if let Some(robber_gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Taxi).unwrap()) {
+        if let Some(robber_gltf) = assets_gltf.get(hm_scenes.get(&SceneKey::Robber).unwrap()) {
             // spawn the first scene in the file
             spawn_robber(&mut commands, robber_gltf, gltf, &assets_gltf_nodes);
         }
@@ -191,10 +191,8 @@ fn spawn_robber(
     // TODO:
     // Collect all possible paths that should be named as follow: Robber1Point1, RObber1Point2, Robber2Point1, etc and then get one at random for robber
     let path: Vec<Vec3> = get_random_robber_path(city_g, assets_gltf_nodes);
-    info!("path: {:?}", path.clone());
 
     let starting_position = path.first().cloned().unwrap_or_default();
-    info!("Robber position: {:?}", starting_position.clone());
     c.spawn((
         SceneBundle {
             scene: g.scenes[0].clone(),

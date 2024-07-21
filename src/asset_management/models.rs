@@ -20,11 +20,12 @@ impl FromWorld for HandleMap<SceneKey> {
         let asset_server = world.resource::<AssetServer>();
         [
             (SceneKey::Taxi, asset_server.load("scenes/taxi.gltf")),
+            (SceneKey::Robber, asset_server.load("scenes/robber.gltf")),
             (
                 SceneKey::Ambulance,
                 asset_server.load("dump/ambulance.gltf"),
             ),
-            (SceneKey::City, asset_server.load("dump/city.gltf")),
+            (SceneKey::City, asset_server.load("scenes/city.gltf")),
         ]
         .into()
     }
