@@ -3,6 +3,7 @@ use bevy_sprite3d::Sprite3d;
 
 use crate::{
     asset_management::{images::ImageKey, models::SceneKey, types::HandleMap},
+    screen::Screen,
     util::math::BLENDER_QUAT,
 };
 
@@ -14,6 +15,9 @@ pub struct CameraPoint;
 #[derive(Component)]
 pub struct CameraIcon;
 
+#[derive(Component)]
+pub struct Scene;
+
 // This exists because parenting nullifies Transform rotation...
 #[derive(Component)]
 pub struct TranslationRelativeTo(pub Entity, pub Vec3);
@@ -23,8 +27,29 @@ pub struct CurrentScene(pub Option<SceneKey>);
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<CurrentScene>()
-        // .add_systems(Startup, (spawn_gltf_objects, spawn_cube))
-        .add_systems(Update, (put_relative, spawn_gltf_objects));
+        .add_systems(OnEnter(Screen::Playing), (spawn_gltf_objects,))
+        .add_systems(OnExit(Screen::Playing), (despawn_gltf_objects,))
+        .add_systems(Update, (put_relative).run_if(in_state(Screen::Playing)));
+}
+
+fn despawn_gltf_objects(
+    mut commands: Commands,
+    mut r_current_scn: ResMut<CurrentScene>,
+    scene: Query<Entity, With<Scene>>,
+    camera_points: Query<Entity, With<CameraPoint>>,
+    camera_icons: Query<Entity, With<CameraIcon>>,
+) {
+    if let Result::Ok(scene) = scene.get_single() {
+        commands.entity(scene).despawn();
+    }
+    for cam_point in camera_points.iter() {
+        commands.entity(cam_point).despawn();
+    }
+    for cam_icon in camera_icons.iter() {
+        commands.entity(cam_icon).despawn();
+    }
+
+    *r_current_scn = CurrentScene(None);
 }
 
 fn spawn_gltf_objects(
@@ -72,10 +97,13 @@ fn spawn_scene_with_cameras(
     img_assets: &Res<HandleMap<ImageKey>>,
 ) {
     let scene_ent = c
-        .spawn(SceneBundle {
-            scene: g.scenes[0].clone(),
-            ..Default::default()
-        })
+        .spawn((
+            Scene,
+            SceneBundle {
+                scene: g.scenes[0].clone(),
+                ..Default::default()
+            },
+        ))
         .id();
 
     g.nodes

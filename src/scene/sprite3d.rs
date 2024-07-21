@@ -4,6 +4,8 @@ use std::{f32::consts::PI, sync::LazyLock};
 use bevy::{prelude::*, utils::HashMap};
 use bevy_sprite3d::{Sprite3d, Sprite3dComponent, Sprite3dParams, Sprite3dPlugin};
 
+use crate::screen::Screen;
+
 #[derive(Component)]
 pub enum BufferedSprite3d {
     Image(Sprite3d),
@@ -11,8 +13,10 @@ pub enum BufferedSprite3d {
 }
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(Sprite3dPlugin)
-        .add_systems(Update, (load_buffered_sprites));
+    app.add_plugins(Sprite3dPlugin).add_systems(
+        Update,
+        (load_buffered_sprites).run_if(in_state(Screen::Playing)),
+    );
 }
 
 pub fn clone_sprite3d(s: &Sprite3d) -> Sprite3d {

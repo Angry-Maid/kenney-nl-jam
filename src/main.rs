@@ -80,7 +80,6 @@ fn main() -> AppExit {
             game::plugin,
             screen::plugin,
             ui::plugin,
-            scene::plugin,
             asset_management::plugin,
         ))
         .configure_sets(
